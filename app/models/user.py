@@ -10,6 +10,13 @@ class User(db.Model):
     password = db.Column(db.String(128), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    tasks = db.relationship(
+        'Task',
+        back_populates='user',
+        cascade='all, delete-orphan',
+        lazy='select'
+    )
+
     def serialize(self):
         return {
             'id': self.id,
