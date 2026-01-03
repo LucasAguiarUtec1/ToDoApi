@@ -9,12 +9,17 @@ class UserService:
         user = User(username=username, email=email, password=password)
         db.session.add(user)
         db.session.commit()
-        return user
+        return user.serialize()
     
     @staticmethod
     def get_all_users():
         return User.query.all()
     
+    @staticmethod
+    def get_user_by_id(id):
+        user = User.query.get(id)
+        return user.serialize() if user else None
+
     @staticmethod
     def delete_user(id):
         user = User.query.get(id)
