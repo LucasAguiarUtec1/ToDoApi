@@ -29,7 +29,8 @@ def create_app():
     def handle_value_error(error):
         return {"error": str(error)}, 404
 
-    from app.routes import user_routes
+    from app.routes import user_routes, task_routes
     api.add_namespace(user_routes.ns, path='/users')
+    api.add_namespace(task_routes.ns, path='/tasks')
 
     return app
