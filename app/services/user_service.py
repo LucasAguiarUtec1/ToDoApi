@@ -46,3 +46,7 @@ class UserService:
         db.session.commit()
         return
     
+    @staticmethod
+    def get_user_by_email(email):
+        user = User.query.filter_by(email=email).first()
+        return user if user else None

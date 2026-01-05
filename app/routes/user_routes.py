@@ -21,9 +21,14 @@ user_input_put = ns.model('UserInputUpdate', {
     'email': fields.String(required=False, description='Email del usuario')
 })
 
+login_input = ns.model('LoginInput', {
+    'email': fields.String(required=True, description='Email del usuario'),
+    'password': fields.String(required=True, description='Contraseña del usuario')
+})
+
 @ns.route('/')
 class UserList(Resource):
-    @ns.doc('list_users')
+    @ns.doc('list_users', security='Bearer Auth')
     @ns.marshal_list_with(user_model)
     def get(self):
         '''Listar todos los usuarios'''
@@ -38,7 +43,7 @@ class UserList(Resource):
     
 @ns.route("/<int:id>")
 class UserResource(Resource):
-    @ns.doc('delete_user')
+    @ns.doc('delete_user', security='Bearer Auth')
     @ns.response(204, 'Usuario eliminado')
     def delete(self, id):
         '''Eliminar un usuario por id'''
@@ -49,3 +54,11 @@ class UserResource(Resource):
     def put(self, id):
         '''Actualizar un usuario'''
         return UserController.update_user(id)
+
+@ns.route('/login')
+class UserLogin(Resource):
+    @ns.doc('login_user')
+    @ns.expect(login_input)
+    def post(self):
+        '''Login de usuario'''
+        return UserController.login()

@@ -1,11 +1,37 @@
 from flask import abort, jsonify, request
 from app.services.user_service import UserService
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token, jwt_required
 
 bcrypt = Bcrypt()
 
 class UserController:
     @staticmethod
+    def login():
+        data = request.get_json(silent=True)
+        if not data:
+            abort(400, 'request must be JSON')
+        
+        email = data.get('email')
+        password = data.get('password')
+
+        if email is None or password is None:
+            raise ValueError('Email and password are required')
+        
+        try:
+            user = UserService.get_user_by_email(email)
+            if not user or not bcrypt.check_password_hash(user.password, password):
+                raise ValueError('Invalid email or password')
+            
+            access_token = create_access_token(identity=user.id)
+            return {'access_token': access_token}
+        except ValueError as e:
+            raise
+        except Exception as e:
+            abort(500, description='Internal server error')
+
+    @staticmethod
+    @jwt_required()
     def get_users():
         users = UserService.get_all_users()
         return users, 200
@@ -29,6 +55,7 @@ class UserController:
             abort(500, description='Internal server error')
     
     @staticmethod
+    @jwt_required()
     def delete_user(id):
         if not id:
             raise ValueError('Bad request')
@@ -42,6 +69,7 @@ class UserController:
             abort(500, description='Internal server error')
 
     @staticmethod
+    @jwt_required()
     def update_user(id):
         data = request.json
         username = data['username']
