@@ -4,17 +4,29 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_restx import Api
 from app.config import Config
+from flask_jwt_extended import JWTManager
 
 db = SQLAlchemy()
 migrate = Migrate()
+jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    jwt.init_app(app)
 
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app)
+
+    authorizations = {
+        'Bearer Auth': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': "Introduzca el token JWT con el prefijo 'Bearer <token>'"
+        }
+    }
 
     api = Api(
         app,
@@ -22,7 +34,8 @@ def create_app():
         title='Api Todo',
         desccription='Api con Flask-RESTX y Swagger UI',
         doc='/docs',
-        prefix='/api'
+        prefix='/api',
+        authorizations=authorizations,
     )
 
     @api.errorhandler(ValueError)

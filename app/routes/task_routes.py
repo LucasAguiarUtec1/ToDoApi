@@ -1,6 +1,5 @@
 from flask_restx import Namespace, Resource, fields, reqparse
 from app.controllers.task_controller import TaskController
-from flask import request
 
 ns = Namespace('tasks', description='Operaciones disponibles para las tareas')
 
@@ -15,7 +14,6 @@ task_model = ns.model('Task', {
 
 task_input = ns.model('Task_input', {
     'name': fields.String(required=True, description='Nombre de la tarea'),
-    'user_id': fields.Integer(required=True, description='Id del usuario que crea la tarea'),
     'expires_in': fields.DateTime(required=True, description='Fecha limite/expiracion de la tarea')
 })
 
@@ -26,7 +24,7 @@ task_input_update = ns.model('Task_input_update', {
 
 @ns.route('/')
 class TaskList(Resource):
-    @ns.doc('create_task')
+    @ns.doc('create_task', security='Bearer Auth')
     @ns.expect(task_input)
     @ns.marshal_with(task_model, 201)
     def post(self):
@@ -36,7 +34,7 @@ class TaskList(Resource):
 @ns.route('/<int:id>/complete')
 @ns.param('id', 'El id de la tarea')
 class TaskComplete(Resource):
-    @ns.doc('complete_task')
+    @ns.doc('complete_task', security='Bearer Auth')
     @ns.marshal_with(task_model)
     def put(self, id):
         '''Marcar una tarea como completada'''
@@ -45,12 +43,12 @@ class TaskComplete(Resource):
 @ns.route('/<int:id>')
 @ns.param('id', 'El id de la tarea')
 class TaskResource(Resource):
-    @ns.doc('delete_task')
+    @ns.doc('delete_task', security='Bearer Auth')
     def delete(self, id):
         '''Eliminar una tarea'''
         return TaskController.delete_task(id)
     
-    @ns.doc('update_task')
+    @ns.doc('update_task', security='Bearer Auth')
     @ns.expect(task_input_update)
     @ns.marshal_with(task_model)
     def put(self, id):
@@ -60,7 +58,7 @@ class TaskResource(Resource):
 @ns.route('/user/<int:user_id>')
 @ns.param('user_id', 'El id del usuario')
 class UserTasks(Resource):
-    @ns.doc('get_user_tasks')
+    @ns.doc('get_user_tasks', security='Bearer Auth')
     @ns.param('page', 'Numero de pagina', type=int, default=1)
     @ns.param('per_page', 'Tareas por pagina', type=int, default=10)
     def get(self, user_id):
