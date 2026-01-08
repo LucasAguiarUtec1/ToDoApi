@@ -62,3 +62,10 @@ class UserLogin(Resource):
     def post(self):
         '''Login de usuario'''
         return UserController.login()
+    
+@ns.route('/logout')
+class UserLogout(Resource):
+    @ns.doc('logout_user', security='Bearer Auth')
+    def post(self):
+        '''Logout de usuario'''
+        return UserController.logout()

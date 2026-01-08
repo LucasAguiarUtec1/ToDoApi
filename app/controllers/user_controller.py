@@ -1,7 +1,8 @@
 from flask import abort, jsonify, request
 from app.services.user_service import UserService
+from app.controllers.blocklist_controller import BlocklistController
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import create_access_token, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required, decode_token
 
 bcrypt = Bcrypt()
 
@@ -25,6 +26,27 @@ class UserController:
             
             access_token = create_access_token(identity=user.id)
             return {'access_token': access_token}
+        except ValueError as e:
+            raise
+        except Exception as e:
+            abort(500, description='Internal server error')
+
+    @staticmethod
+    def logout():
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            abort(400, 'Authorization header is required')
+        
+        try:
+            access_token = auth_header.split(' ')[1]
+        except IndexError:
+            abort(400, 'Invalid Authorization header format')
+        
+        try:
+            decoded_token = decode_token(access_token)
+            jti = decoded_token['jti']
+            BlocklistController.revoke_token(jti)
+            return '', 204
         except ValueError as e:
             raise
         except Exception as e:
