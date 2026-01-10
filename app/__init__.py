@@ -10,6 +10,35 @@ db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
 
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    from app.controllers.blocklist_controller import BlocklistController
+    jti = jwt_payload.get('jti')
+    if jti is None:
+        return False
+    return BlocklistController.is_token_revoked(jti)
+
+
+@jwt.revoked_token_loader
+def revoked_token_callback(jwt_header, jwt_payload):
+    return {"msg": "The token has been revoked"}, 401
+
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return {"msg": f"Invalid token: {error}"}, 422
+
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return {"msg": "Request does not contain an access token"}, 401
+
+
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return {"msg": "The token has expired"}, 401
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
