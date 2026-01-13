@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.controllers.user_controller import UserController
+from app import limiter
 
 ns = Namespace('users', description='Operaciones de usuarios')
 
@@ -37,6 +38,7 @@ class UserList(Resource):
     @ns.doc('create_user')
     @ns.expect(user_input)
     @ns.marshal_with(user_model, code=201)
+    @limiter.limit("10 per minute")
     def post(self):
         '''Crear nuevo usuario'''
         return UserController.create_user()
@@ -59,6 +61,7 @@ class UserResource(Resource):
 class UserLogin(Resource):
     @ns.doc('login_user')
     @ns.expect(login_input)
+    @limiter.limit("5 per minute")
     def post(self):
         '''Login de usuario'''
         return UserController.login()

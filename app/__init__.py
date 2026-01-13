@@ -1,15 +1,19 @@
-from flask import Flask
+from flask import Flask, request, abort
+from datetime import timedelta
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_restx import Api
 from app.config import Config
 from flask_jwt_extended import JWTManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import redis as redislib
 
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
-
+limiter = Limiter(key_func=get_remote_address, default_limits=['200 per minute'])
 
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_payload):
@@ -47,6 +51,28 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app)
+
+    app.config.setdefault('RATELIMIT_STORAGE_URL', 'redis://localhost:6379/0')
+    limiter.init_app(app)
+
+    app.redis_client = redislib.from_url(app.config['RATELIMIT_STORAGE_URL'])
+
+    @app.before_request
+    def check_blocklist_and_progressive_ban():
+        ip = request.remote_addr or get_remote_address()
+        r = app.redis_client
+
+        if r.get(f"ban:{ip}"):
+            abort(429, description="Too many requests. You are temporarily banned.")
+        
+        key = f"req:{ip}"
+        n = r.incr(key)
+        if n == 1:
+            r.expire(key, 60)
+        
+        if n > 300:
+            r.setex(f"ban:{ip}", timedelta(minutes=30), 1)
+            abort(429, description="Temporarily banned due to high request.")
 
     authorizations = {
         'Bearer Auth': {
