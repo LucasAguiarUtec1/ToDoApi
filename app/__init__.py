@@ -26,22 +26,22 @@ def check_if_token_revoked(jwt_header, jwt_payload):
 
 @jwt.revoked_token_loader
 def revoked_token_callback(jwt_header, jwt_payload):
-    return {"msg": "The token has been revoked"}, 401
+    return {"error": "The token has been revoked"}, 401
 
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
-    return {"msg": f"Invalid token: {error}"}, 422
+    return {"error": f"Invalid token: {error}"}, 422
 
 
 @jwt.unauthorized_loader
 def missing_token_callback(error):
-    return {"msg": "Request does not contain an access token"}, 401
+    return {"error": "Request does not contain an access token"}, 401
 
 
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
-    return {"msg": "The token has expired"}, 401
+    return {"error": "The token has expired"}, 401
 
 def create_app():
     app = Flask(__name__)

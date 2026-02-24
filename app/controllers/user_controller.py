@@ -25,7 +25,7 @@ class UserController:
                 raise ValueError('Invalid email or password')
             
             access_token = create_access_token(identity=user.id)
-            return {'access_token': access_token}
+            return {'access_token': access_token, 'user': {'id': user.id, 'username': user.username}}
         except ValueError as e:
             raise
         except Exception as e:
