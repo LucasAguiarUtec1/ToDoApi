@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { User } from "../types/User"
+import { login } from "../api/auth"
 
 export default function LoginPage() {
 
@@ -8,16 +8,20 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    const user: Partial<User> = {
-      email: email,
-      password: password
-    }
-
-    console.log('Submitting login with:', user)
-    }
+    async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault()
+  setLoading(true)
+  try {
+    const res = await login({ email, password })
+    setError(null)
+    localStorage.setItem('token', res.accessToken)
+    console.log('Login exitoso:', res)
+  } catch (err) {
+    setError('Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.')
+  } finally {
+    setLoading(false)  // ← faltaba esto
+  }
+}
 
     return (
     <main className="flex items-center min-h-screen bg-slate-950 px-4">

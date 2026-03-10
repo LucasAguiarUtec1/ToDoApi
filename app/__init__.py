@@ -50,7 +50,13 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    CORS(app)
+    CORS(app, resources={
+        r"/*": {
+            "origins": "http://localhost:5173",
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
 
     app.config.setdefault('RATELIMIT_STORAGE_URL', 'redis://localhost:6379/0')
     limiter.init_app(app)
