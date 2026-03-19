@@ -1,8 +1,12 @@
 import { useState } from "react"
 import { login } from "../api/auth"
+import { useNavigate } from "react-router-dom"
+import { useAppStore } from "../store/AppStore"
 
 export default function LoginPage() {
 
+    const navigate = useNavigate()
+    const { dispatch } = useAppStore()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
@@ -15,11 +19,18 @@ export default function LoginPage() {
     const res = await login({ email, password })
     setError(null)
     localStorage.setItem('token', res.accessToken)
+    dispatch({
+      type: 'LOGIN_SUCCESS',
+      payload: {
+        token: res.accessToken,
+        user: res.user
+      }
+    })
     console.log('Login exitoso:', res)
-  } catch (err) {
+  } catch {
     setError('Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.')
   } finally {
-    setLoading(false)  // ← faltaba esto
+    setLoading(false)
   }
 }
 
