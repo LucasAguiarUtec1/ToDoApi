@@ -1,14 +1,11 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-
-type ProctectedRouteProps = {
-    isAuthenticated: boolean
-    redirectTo?: string
-}
+import { useAppStore } from "../store/AppStore";
 
 export default function ProtectedRoute({
-    isAuthenticated,
     redirectTo = '/login'
-}: ProctectedRouteProps) {
+}: {redirectTo? : string}) {
+    const {state: { token }} = useAppStore()
+    const isAuthenticated = Boolean(token)
     const location = useLocation()
     if (!isAuthenticated) {
         return <Navigate to={redirectTo} replace state={{from: location}} />

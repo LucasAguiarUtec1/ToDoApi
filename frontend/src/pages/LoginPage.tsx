@@ -1,23 +1,38 @@
 import { useState } from "react"
-import type { User } from "../types/User"
+import { login } from "../api/auth"
+import { useNavigate } from "react-router-dom"
+import { useAppStore } from "../store/AppStore"
 
 export default function LoginPage() {
 
+    const navigate = useNavigate()
+    const { dispatch } = useAppStore()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    const user: Partial<User> = {
-      email: email,
-      password: password
-    }
-
-    console.log('Submitting login with:', user)
-    }
+    async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault()
+  setLoading(true)
+  try {
+    const res = await login({ email, password })
+    setError(null)
+    localStorage.setItem('token', res.accessToken)
+    dispatch({
+      type: 'LOGIN_SUCCESS',
+      payload: {
+        token: res.accessToken,
+        user: res.user
+      }
+    })
+    console.log('Login exitoso:', res)
+  } catch {
+    setError('Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.')
+  } finally {
+    setLoading(false)
+  }
+}
 
     return (
     <main className="flex items-center min-h-screen bg-slate-950 px-4">
