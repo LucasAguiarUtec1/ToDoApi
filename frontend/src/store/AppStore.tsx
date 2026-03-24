@@ -12,10 +12,18 @@ type AuthUser = {
     username: string
 }
 
+type Task = {
+    id: number, 
+    name: string,
+    completed: boolean,
+    expires_in: string
+}
+
 type AppState = {
     token: string | null,
     user: AuthUser | null,
-    menuOpen: boolean
+    menuOpen: boolean,
+    tasks: Task[]
 }
 
 type AppAction = 
@@ -23,6 +31,7 @@ type AppAction =
     | {type: 'LOGOUT'}
     | {type: 'TOGGLE_MENU'}
     | {type: 'CLOSE_MENU'}
+    | {type: 'SET_TASKS'; payload: []}
 
 type AppStoreContextValue = {
     state: AppState
@@ -48,7 +57,9 @@ function loadInitialState(): AppState {
     return {
         token,
         user,
-        menuOpen: false
+        menuOpen: false,
+        tasks: [{id: 1, name: 'Tarea 1', completed: false,  expires_in: new Date().toISOString().split("T")[0]},
+                {id: 2, name: 'Tarea 2', completed: true, expires_in: new Date().toISOString().split("T")[0]}]
     }
 }
 
@@ -70,7 +81,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
             return {
                 token: null,
                 user: null,
-                menuOpen: false
+                menuOpen: false,
+                tasks: []
             }
         }
         

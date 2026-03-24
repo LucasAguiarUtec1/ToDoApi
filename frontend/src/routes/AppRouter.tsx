@@ -13,9 +13,11 @@ export default function AppRouter() {
 
   const isAuthenticated = Boolean(token)
 
+  console.log('AppRouter renderizado. isAuthenticated:', isAuthenticated)
+
   return (
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/tasks" replace/> : <LoginPage />} />
 
         {/* protegidas */}
         <Route
