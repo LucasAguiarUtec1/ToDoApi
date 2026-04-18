@@ -1,5 +1,6 @@
 from app import db
 from app.models.task import Task
+from datetime import datetime
 
 class TaskService:
     @staticmethod
@@ -51,6 +52,12 @@ class TaskService:
     @staticmethod
     def get_paginated_user_tasks(user_id, page, per_page):
         paginated_tasks = Task.query.filter_by(user_id=user_id).paginate(page=page, per_page=per_page, error_out=False)
+        for task in paginated_tasks.items:
+            if task.expires_in < datetime.utcnow():
+                task.expired = True
+                task.completed = True
+                db.session.commit()
+
         return {
             'tasks': [task.serialize() for task in paginated_tasks.items],
             'total': paginated_tasks.total,
