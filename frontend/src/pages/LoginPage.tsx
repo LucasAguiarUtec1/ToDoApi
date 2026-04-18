@@ -4,34 +4,34 @@ import { useAppStore } from "../store/AppStore"
 
 export default function LoginPage() {
 
-    const { dispatch } = useAppStore()
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+  const { dispatch } = useAppStore()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-    async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault()
-  setLoading(true)
-  try {
-    const res = await login({ email, password })
-    setError(null)
-    dispatch({
-      type: 'LOGIN_SUCCESS',
-      payload: {
-        token: res.accessToken,
-        user: res.user
-      }
-    })
-    console.log('Login exitoso:', res)
-  } catch {
-    setError('Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.')
-  } finally {
-    setLoading(false)
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const res = await login({ email, password })
+      setError(null)
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: {
+          token: res.access_token,
+          user: res.user
+        }
+      })
+      console.log('Login exitoso:', res)
+    } catch {
+      setError('Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.')
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
-    return (
+  return (
     <main className="flex items-center min-h-screen bg-slate-950 px-4">
       <section className="mx-auto w-full max-w-md rounded-xl border border-slate-800 bg-neutral-800 p-6 shadow-lg">
         <h1 className="text-center text-2xl font-bold text-slate-100">

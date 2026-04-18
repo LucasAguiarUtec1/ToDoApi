@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
     createContext,
     useContext,
@@ -13,10 +14,13 @@ type AuthUser = {
 }
 
 type Task = {
-    id: number, 
+    id: number,
     name: string,
     completed: boolean,
-    expires_in: string
+    created_at: string,
+    expires_in: string,
+    user_id: number,
+    expired: boolean
 }
 
 type AppState = {
@@ -26,12 +30,12 @@ type AppState = {
     tasks: Task[]
 }
 
-type AppAction = 
-    | {type: 'LOGIN_SUCCESS'; payload: {token: string, user: AuthUser}}
-    | {type: 'LOGOUT'}
-    | {type: 'TOGGLE_MENU'}
-    | {type: 'CLOSE_MENU'}
-    | {type: 'SET_TASKS'; payload: []}
+type AppAction =
+    | { type: 'LOGIN_SUCCESS'; payload: { token: string, user: AuthUser } }
+    | { type: 'LOGOUT' }
+    | { type: 'TOGGLE_MENU' }
+    | { type: 'CLOSE_MENU' }
+    | { type: 'SET_TASKS'; payload: Task[] }
 
 type AppStoreContextValue = {
     state: AppState
@@ -58,8 +62,7 @@ function loadInitialState(): AppState {
         token,
         user,
         menuOpen: false,
-        tasks: [{id: 1, name: 'Tarea 1', completed: false,  expires_in: new Date().toISOString().split("T")[0]},
-                {id: 2, name: 'Tarea 2', completed: true, expires_in: new Date().toISOString().split("T")[0]}]
+        tasks: []
     }
 }
 
@@ -74,7 +77,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
                 user: action.payload.user
             }
         }
-            
+
         case 'LOGOUT': {
             localStorage.removeItem(TOKEN_STORAGE_KEY)
             localStorage.removeItem(USER_STORAGE_KEY)
@@ -85,7 +88,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
                 tasks: []
             }
         }
-        
+
         case 'TOGGLE_MENU': {
             return {
                 ...state,
@@ -100,6 +103,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
             }
         }
 
+        case 'SET_TASKS': {
+            return {
+                ...state,
+                tasks: action.payload
+            }
+        }
+
         default:
             return state
     }
@@ -107,9 +117,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 const AppStoreContext = createContext<AppStoreContextValue | undefined>(undefined)
 
-export function AppStoreProvider({children}: {children: ReactNode}) {
+export function AppStoreProvider({ children }: { children: ReactNode }) {
     const [state, dispatch] = useReducer(appReducer, undefined, loadInitialState)
-    const value = useMemo(() => ({state, dispatch}), [state])
+    const value = useMemo(() => ({ state, dispatch }), [state])
 
     return (<AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>)
 }
