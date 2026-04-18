@@ -6,7 +6,7 @@ export type LoginRequest = {
 }
 
 export type LoginResponse = {
-    accessToken: string
+    access_token: string
     user: {
         id: number
         username: string
